@@ -1,0 +1,85 @@
+ASCII_PERFECTION_REFACTOR.txt
+
+TUJUAN: OUTPUT ASCII ADAPTIF DAN PROPORSIONAL SEMPURNA
+
+Targetnya adalah menghilangkan semua distorsi aspek (gepeng vertikal/horizontal), menghasilkan output yang tajam dan detail, serta secara otomatis menyesuaikan diri dengan ukuran window terminal di semua platform (Windows, macOS, Linux, CodeSpaces).
+
+1. LOGIKA KOREKSI RASIO & PROPORSI (The Core Fix)
+
+Untuk memastikan gambar (statis, GIF, live) tidak pernah terlihat gepeng, kita harus menjalankan dua langkah matematika yang berurutan:
+
+A. Deteksi Dimensi Terminal (Adaptasi Penuh)
+
+Program harus secara dinamis mendeteksi ukuran terminal $W_t \text{ x } H_t$ (dalam karakter) saat dijalankan.
+
+Aksi: Gunakan library OS yang sesuai (ioctl / TIOCGWINSZ di Unix/macOS, API konsol Windows) untuk mendapatkan $W_t$ dan $H_t$. Jika deteksi gagal (misalnya, output dialihkan ke file), fallback ke preset ukuran maksimal (misalnya, $200 \text{x} 50$).
+
+B. Perhitungan Batasan Dimensi ASCII (Aspect Ratio Correction)
+
+Karakter terminal memiliki rasio tinggi-lebar $\approx 2:1$. Kita harus mengoreksi Tinggi Terminal ($H_t$) untuk mendapatkan dimensi ruang display ASCII yang efektif dan proporsional.
+
+Dimensi Maksimal Efektif: Hitung ruang maksimum yang dapat digunakan untuk output ASCII:
+
+$\text{Max Lebar ASCII } (W_{max}) = W_t$
+
+$\text{Max Tinggi ASCII Terkoreksi } (H_{max_corrected}) = \lfloor H_t / 2 \rfloor$ (Dibagi 2 karena setiap baris ASCII memakan ruang vertikal 2x lebih besar).
+
+C. Algoritma Fitting Proporsional (Menjaga Bentuk Gambar)
+
+Gunakan image aspect ratio asli ($W_{orig} : H_{orig}$) dan paksa output agar sesuai dengan batasan $W_{max} \text{ x } H_{max_corrected}$ tanpa distorsi. Ini memastikan gambar landscape, portrait, atau GIF apa pun tetap terlihat benar.
+
+Hitung Faktor Skala Pembatas:
+
+Skala berdasarkan Lebar: $S_W = \frac{W_{max}}{W_{orig}}$
+
+Skala berdasarkan Tinggi: $S_H = \frac{H_{max_corrected}}{H_{orig}}$
+
+Pilih Skala Paling Kecil: $\text{Skala Akhir } (S_{final}) = \min(S_W, S_H)$
+
+Tentukan Dimensi Resize Target ASCII:
+
+$\text{Lebar Target ASCII } (W_{ascii}) = \lfloor W_{orig} \times S_{final} \rfloor$
+
+$\text{Tinggi Target ASCII } (H_{ascii}) = \lfloor H_{orig} \times S_{final} \rfloor$
+
+Aksi: Program Anda harus melakukan resize frame gambar asli ke dimensi $W_{ascii} \text{ x } H_{ascii}$ sebelum konversi. Dimensi $H_{ascii}$ ini sudah dikoreksi untuk tampilan terminal, sehingga output akan terlihat sempurna di terminal.
+
+2. PENYEMPURNAAN KUALITAS & DETAIL
+
+A. Akurasi Luminance (L)
+
+Gunakan formula weighted average ITU-R BT.601 untuk konversi grayscale yang lebih akurat:
+
+$$\text{L} = \lfloor (0.299 \times R) + (0.587 \times G) + (0.114 \times B) \rfloor$$
+
+Setelah mendapatkan nilai L (0-255), petakan ke palet karakter Anda.
+
+B. Palet Karakter Berdetail Tinggi
+
+Gunakan palet yang lebih panjang dan padat untuk detail yang lebih baik (pastikan palet diurutkan dari terang/spasi ke gelap/simbol):
+
+$$\text{Palet Saran:} \quad `$@B\%8\&WM\#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1\{\}\[]?-_+~<>i!lI;:,."^ `'$$_
+
+C. Pengurangan Flicker dan Animasi GIF Mulus
+
+Double Buffering: Untuk mencegah flicker pada terminal dan GIF, jangan mencetak langsung. Bangun seluruh frame (termasuk karakter ASCII dan newline) dalam buffer string tunggal, lalu cetak buffer tersebut menggunakan satu panggilan write() atau printf() yang besar.
+
+Penanganan Waktu GIF: Saat memproses GIF (menggunakan stb_image.h atau library lain), ekstrak delay time (waktu tunda) antar frame. Gunakan fungsi sleep platform spesifik (misalnya, usleep atau Sleep) untuk menahan frame selama waktu tunda yang ditentukan dalam metadata GIF.
+
+Hapus Baris Sebelumnya: Sebelum mencetak frame GIF baru, gunakan escape code terminal (\033[2J untuk menghapus layar, atau lebih baik lagi \033[F untuk kembali ke baris atas) untuk menimpa frame sebelumnya.
+
+3. STRUKTUR HYBRID C/C++ & DEPENDENSI
+
+A. Integrasi C/C++
+
+Gunakan g++ sebagai compiler dan linker utama.
+
+Pertahankan stb_image.h (tidak perlu diubah) untuk memuat data frame statis/GIF.
+
+Pindahkan logika resize, luminance, dan perhitungan fitting proporsional (Bagian 1 dan 2) ke dalam modul C++ baru (image_processor.cpp) yang menggunakan wrapper extern "C" di header-nya (image_processor.h) agar dapat diakses oleh kode C lama Anda.
+
+B. Perlakuan Dimensi UI
+
+Default Behavior: Ketika tidak ada flag ukuran yang diberikan, DEFAULT program harus menggunakan logika Adaptif Penuh (Bagian 1) untuk fitting sempurna.
+
+Custom Size Flag: Jika pengguna menggunakan flag --size W H, program tetap harus menerapkan Koreksi Rasio Aspek ($H_{ascii} = \lfloor H/2 \rfloor$) secara internal.

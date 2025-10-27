@@ -1,0 +1,64 @@
+[package]
+name = "ascii-media"
+version = "3.0.0"
+edition = "2021"
+authors = ["danko12"]
+description = "Advanced ASCII media converter and player - converts images, GIFs, videos, and webcam streams to ASCII art in the terminal (integrates tplay functionality)"
+repository = "https://github.com/danko12/ascii-media"
+license = "MIT"
+readme = "README.md"
+keywords = ["ascii", "media-player", "image-converter", "terminal", "video"]
+categories = [
+    "command-line-utilities",
+    "multimedia",
+    "multimedia::video",
+    "multimedia::images",
+]
+
+# Build configuration for C/C++ integration
+[build-dependencies]
+cc = "1.0"
+
+[[bin]]
+name = "ascii-media"
+path = "rust/src/main.rs"
+
+[dependencies]
+clap = { version = "4.2", features = ["derive"] }
+crossterm = "0.28"
+gif = "0.13.1"
+gif-dispose = "5.0.0-beta.2"
+libwebp-sys = "0.11"
+image = "0.25"
+thiserror = "2.0"
+fast_image_resize = "5.0.0"
+crossbeam-channel = "0.5"
+anyhow = "1.0"
+url = "2.3"
+tempfile = "3.5"
+num = "0.4"
+either = "1.8"
+reqwest = { version = "0.12", features = ["blocking"], optional = true }
+opencv = { version = "0.94.2", default-features = false, features = ["videoio", "imgproc", "clang-runtime"], optional = true }
+ffmpeg-next = { version = "7.1.0", optional = true }
+youtube_dl = { version = "0.10", optional = true }
+rodio = { version = "0.20.1", optional = true }
+libmpv = { version = "2.0.1", optional = true }
+libmpv-sirno = { version = "2.0.2-fork.1", optional = true }
+serde_json = { version = "1.0", optional = true }
+
+[features]
+default = ["rodio_audio"]
+video = ["opencv", "ffmpeg-next"]
+webcam = ["opencv"]
+youtube = ["youtube_dl", "reqwest", "serde_json"]
+audio = ["rodio"]
+mpv_0_34 = ["libmpv"]
+mpv_0_35 = ["libmpv-sirno"]
+rodio_audio = ["rodio"]
+full = ["video", "webcam", "youtube", "rodio_audio"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
