@@ -88,26 +88,40 @@ fn main() {
 }
 
 fn print_usage() {
-    println!("ASCII-MEDIA v3.0.0 - Terminal Multimedia Converter & Player");
+    println!("ASCII-MEDIA v3.0.0 - Terminal ASCII Art Converter");
     println!("Copyright (c) 2025 danko12 | Linux & macOS Only");
     println!();
     println!("USAGE:");
-    println!("  For Images/GIFs (C/C++ engine):");
+    println!("  Images & GIFs:");
     println!("    ./ascii <image-file> [OPTIONS]");
-    println!("    ./ascii sample-images/puffin.jpg -D 3 --enhanced-palette");
-    println!("    ./ascii sample-images/nyan-cat.gif --animate --debug");
     println!();
-    println!("  For Videos (C++ engine with OpenCV):");
-    println!("    ./ascii-video <video-file> [OPTIONS]");
+    println!("  Examples:");
+    println!("    ./ascii sample-images/puffin.jpg -D 3");
+    println!("    ./ascii sample-images/nyan-cat.gif --animate -D 2");
+    println!("    ./ascii image.jpg -D 3 --sharpen 1.2 --grayscale");
     println!();
-    println!("FEATURES:");
+    println!("  Common Options:");
+    println!("    -D <preset>      Dimension preset (1-6, default: auto)");
+    println!("    --sharpen <val>  Sharpening strength (0.0-2.0, default: 0.0)");
+    println!("    --grayscale      Black & white mode");
+    println!("    --animate        Play GIF animations");
+    println!("    --braille        Use braille characters (high detail)");
+    println!("    --help           Show full help message");
+    println!();
+    println!("CURRENT FEATURES (v3.0.0):");
     println!("  ✅ Images (JPEG, PNG, BMP, etc.) - Full support");
-    println!("  ✅ GIF Animations - Ultra-smooth with double buffering");
-    println!("  ✅ 24-bit True Color + Grayscale");
-    println!("  ✅ Enhanced 70+ character precision palette");
-    println!("  ✅ Debug mode with real-time stats");
-    println!("  ✅ BT.601 luminance with gamma compensation");
-    println!("  ✅ Smart aspect ratio lock (±3%)");
-    println!("  ✅ Video Files (MP4, AVI, MKV, WEBM) - Full support with OpenCV");
+    println!("  ✅ GIF Animations - Ultra-smooth playback (60+ FPS)");
+    println!("  ✅ 24-bit True Color & Grayscale modes");
+    println!("  ✅ Unsharp mask sharpening (0.0-2.0)");
+    println!("  ✅ Edge detection (Sobel operator)");
+    println!("  ✅ Braille mode for ultra-high detail");
+    println!("  ✅ Perfect aspect ratio (no distortion!)");
+    println!();
+    println!("PLANNED FEATURES (v3.1+):");
+    println!("  🔜 Video Files (MP4, AVI, MKV, WEBM)");
+    println!("  🔜 Audio extraction and playback sync");
+    println!("  🔜 Custom color palette import");
+    println!();
+    println!("For detailed documentation, see README.md");
     println!();
 }
