@@ -25,16 +25,9 @@ path = "rust/src/main.rs"
 
 [dependencies]
 clap = { version = "4.2", features = ["derive"] }
-crossterm = "0.28"
-image = "0.25"
-thiserror = "2.0"
-fast_image_resize = "5.0.0"
-anyhow = "1.0"
-opencv = { version = "0.94.2", default-features = false, features = ["videoio", "imgproc", "clang-runtime"] }
 
 [features]
 default = []
-video = ["opencv"]
 
 [profile.release]
 opt-level = 3

@@ -123,42 +123,58 @@ image_t make_resized(image_t* original, size_t max_width, size_t max_height, dou
     size_t width, height;
     size_t channels = original->channels;
 
-    // Improved aspect ratio calculation with smart lock (±3% tolerance)
-    // character_ratio accounts for terminal character aspect (typically 2.0)
-    double target_aspect = (double)original->width / ((double)original->height * character_ratio);
-    double max_aspect = (double)max_width / (double)max_height;
+    // CRITICAL: Aspect ratio correction untuk mencegah gepeng
+    // character_ratio = 2.0 karena karakter terminal tingginya 2x lebarnya
+    // Rumus: aspect_corrected = (img_width / img_height) / character_ratio
     
-    if (target_aspect > max_aspect) {
-        // Width-limited: use full max_width
+    double img_width = (double)original->width;
+    double img_height = (double)original->height;
+    
+    // Enforce minimum constraints FIRST (before scaling calculation)
+    if (max_width < 10) max_width = 10;
+    if (max_height < 8) max_height = 8;
+    
+    // Hitung aspect ratio asli gambar, SUDAH terkoreksi untuk terminal
+    double img_aspect_corrected = img_width / (img_height * character_ratio);
+    
+    // Hitung aspect ratio dari area terminal yang tersedia
+    double terminal_aspect = (double)max_width / (double)max_height;
+    
+    // Fit gambar ke terminal sambil MEMPERTAHANKAN aspect ratio
+    if (img_aspect_corrected > terminal_aspect) {
+        // Gambar lebih LEBAR relatif ke tingginya -> batasi oleh WIDTH
         width = max_width;
-        height = (size_t)((double)max_width / target_aspect + 0.5); // Round to nearest
-        if (height > max_height) height = max_height;
+        height = (size_t)(((double)max_width / img_aspect_corrected) + 0.5);
+        
+        // Safety check: jika height melebihi, recompute KEDUA dimensi
+        if (height > max_height) {
+            height = max_height;
+            width = (size_t)((double)max_height * img_aspect_corrected + 0.5);
+        }
     } else {
-        // Height-limited: use full max_height
+        // Gambar lebih TINGGI relatif ke lebarnya -> batasi oleh HEIGHT
         height = max_height;
-        width = (size_t)((double)max_height * target_aspect + 0.5); // Round to nearest
-        if (width > max_width) width = max_width;
-    }
-    
-    // Smart aspect ratio lock - progressive correction if deviation > 3%
-    double source_ratio = (double)original->width / (double)original->height;
-    double ascii_ratio = (double)width / (double)height;
-    double ratio_diff = fabs(ascii_ratio - source_ratio) / source_ratio;
-    
-    if (ratio_diff > 0.03) {
-        // Adjust height to match source ratio more closely
-        size_t new_height = (size_t)((double)width / source_ratio + 0.5);
-        if (new_height <= max_height) {
-            height = new_height;
-        } else {
-            // If height would exceed, adjust width instead
-            width = (size_t)((double)height * source_ratio + 0.5);
+        width = (size_t)(((double)max_height * img_aspect_corrected) + 0.5);
+        
+        // Safety check: jika width melebihi, recompute KEDUA dimensi
+        if (width > max_width) {
+            width = max_width;
+            height = (size_t)((double)max_width / img_aspect_corrected + 0.5);
         }
     }
     
-    // Ensure minimum size
-    if (width < 10) width = 10;
-    if (height < 8) height = 8;
+    // NO POST-CALCULATION CLAMPS - they break aspect ratio!
+    // Minimum size sudah dienforce di awal pada max_width/max_height
+    
+    // VERIFICATION: Check final aspect ratio matches original
+    double final_aspect = ((double)width / (double)height) * character_ratio;
+    double original_aspect = img_width / img_height;
+    double deviation = fabs((final_aspect - original_aspect) / original_aspect);
+    
+    // If deviation > 3%, log warning
+    if (deviation > 0.03) {
+        fprintf(stderr, "⚠️  Aspect ratio deviation: %.1f%% (target: <3%%)\n", deviation * 100.0);
+    }
 
     double* data = calloc(width * height * channels, sizeof(*data));
     if (!data) {
