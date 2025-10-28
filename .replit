@@ -1,6 +1,7 @@
-modules = ["c-clang14", "rust-stable", "bash", "cpp-clang14"]
+modules = ["c-clang14", "rust-stable", "bash", "cpp-clang14", "rust-1.83"]
 [agent]
 expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["opencv", "pkg-config", "cmake"]

@@ -51,20 +51,9 @@ fn main() {
 
     let media = args.media.unwrap();
     
-    if media.starts_with("http://") || media.starts_with("https://") {
-        println!("🌐 URL streaming detected: {}", media);
-        println!("⚠️  Video/streaming support requires full feature build");
-        println!("   Run: cargo build --release --features full");
-        process::exit(1);
-    } else if media.starts_with("/dev/video") {
-        println!("📹 Webcam device detected: {}", media);
-        println!("⚠️  Webcam support requires full feature build");
-        println!("   Run: cargo build --release --features webcam");
-        process::exit(1);
-    } else if media.ends_with(".mp4") || media.ends_with(".avi") || media.ends_with(".mkv") || media.ends_with(".webm") {
-        println!("🎥 Video file detected: {}", media);
-        println!("⚠️  Video support requires full feature build");
-        println!("   Run: cargo build --release --features video");
+    if media.ends_with(".mp4") || media.ends_with(".avi") || media.ends_with(".mkv") || media.ends_with(".webm") || media.ends_with(".MP4") || media.ends_with(".AVI") {
+        println!("🎥 Video support coming soon!");
+        println!("   For now, use image/GIF processing only");
         process::exit(1);
     } else {
         println!("🖼️  Image/GIF file detected: {}", media);
@@ -108,8 +97,8 @@ fn print_usage() {
     println!("    ./ascii sample-images/puffin.jpg -D 3 --enhanced-palette");
     println!("    ./ascii sample-images/nyan-cat.gif --animate --debug");
     println!();
-    println!("  For Videos/Webcam (Rust engine - requires features):");
-    println!("    cargo run --release --features full -- <media>");
+    println!("  For Videos (C++ engine with OpenCV):");
+    println!("    ./ascii-video <video-file> [OPTIONS]");
     println!();
     println!("FEATURES:");
     println!("  ✅ Images (JPEG, PNG, BMP, etc.) - Full support");
@@ -119,8 +108,6 @@ fn print_usage() {
     println!("  ✅ Debug mode with real-time stats");
     println!("  ✅ BT.601 luminance with gamma compensation");
     println!("  ✅ Smart aspect ratio lock (±3%)");
-    println!("  ⏳ Video Files (MP4, AVI, MKV) - Build with --features video");
-    println!("  ⏳ Webcam Streaming - Build with --features webcam");
-    println!("  ⏳ YouTube Playback - Build with --features youtube");
+    println!("  ✅ Video Files (MP4, AVI, MKV, WEBM) - Full support with OpenCV");
     println!();
 }
