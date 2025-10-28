@@ -1,0 +1,151 @@
+# DOKUMEN PELENGKAP OPTIMASI PROYEK ASCII MEDIA (FINAL INTEGRATION PROMPT)
+
+**Tujuan:**
+Menjadikan sistem konversi gambar, GIF, dan webcam menjadi ASCII art dengan hasil yang sempurna, tidak gepeng, tidak flicker, proporsional di semua terminal, serta adaptif terhadap kondisi runtime (ukuran terminal, FPS kamera, dan performa CPU).
+
+---
+
+## 1. PENINGKATAN ADAPTASI ASPEK DAN PROPORSI (Core Display Fix++)
+
+### A. Deteksi Terminal Dinamis & Auto-Recalibration
+
+Program harus **mendeteksi perubahan ukuran terminal secara real-time**. Jika ukuran terminal berubah (resize), sistem otomatis menyesuaikan ulang dimensi ASCII tanpa restart.
+
+**Implementasi:**
+
+* Gunakan sinyal `SIGWINCH` di Unix/Linux/macOS untuk mendeteksi resize.
+* Gunakan `GetConsoleScreenBufferInfo()` di Windows.
+* Jalankan fungsi `recalculate_display_size()` untuk menghitung ulang:
+
+  ```
+  W_t = current_terminal_width
+  H_t = current_terminal_height / 2  // koreksi rasio karakter
+  ```
+* Hindari re-render seluruh gambar bila tidak perlu — lakukan partial reflow jika ukuran baru masih dalam batas toleransi.
+
+### B. Smart Aspect Ratio Lock
+
+Gunakan rasio tetap berdasarkan sumber asli:
+
+```
+source_ratio = W_orig / H_orig
+ascii_ratio = W_ascii / H_ascii
+```
+
+Jika `ascii_ratio` menyimpang lebih dari ±3% dari `source_ratio`, lakukan *progressive correction* dengan mengatur ulang H_ascii hingga keselarasan tercapai.
+
+---
+
+## 2. PENINGKATAN KUALITAS VISUAL (High Fidelity ASCII Mapping)
+
+### A. Multi-Stage Luminance Mapping
+
+Tambahkan dua tahap konversi luminance:
+
+1. **Linear Light Conversion:** `(0.299 * R) + (0.587 * G) + (0.114 * B)`
+2. **Gamma Compensation:** `L_gamma = pow(L / 255.0, 1/2.2) * 255`
+
+Tahap ini menghasilkan gradasi abu-abu yang lebih halus dan realistis pada ASCII.
+
+### B. Palet Karakter Adaptif
+
+Gunakan dua tingkat palet:
+
+* **Mode Presisi Tinggi:** `@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^' .`
+* **Mode Kinerja Tinggi:** subset dari di atas (40 karakter pertama) untuk sistem lambat.
+
+Sistem otomatis memilih palet berdasarkan FPS dan performa CPU runtime.
+
+---
+
+## 3. PENANGANAN VIDEO & WEBCAM (Dynamic Frame Balancing)
+
+### A. Adaptive FPS Controller
+
+Buat loop pemrosesan webcam atau GIF dengan pengatur FPS adaptif.
+
+```
+frame_time = time_since_last_frame()
+if (frame_time < target_delay) sleep(target_delay - frame_time)
+```
+
+FPS otomatis menyesuaikan performa sistem untuk mencegah lag atau frame drop.
+
+### B. Frame Buffer Synchronization
+
+Gunakan **double buffering**: satu buffer aktif, satu buffer siap render. Setelah render selesai, tukar buffer untuk menampilkan frame baru dengan `write()` tunggal. Hal ini mencegah flicker.
+
+### C. Auto-Recovery & Error Prevention
+
+Jika kamera terputus atau frame gagal diproses:
+
+* Hentikan sementara pipeline.
+* Coba reconnect dalam interval 1 detik.
+* Jika 3 kali gagal, tampilkan pesan aman di terminal: `"[!] Stream interrupted, reconnecting..."`.
+
+---
+
+## 4. STRUKTUR DAN INTEGRASI HYBRID C/C++
+
+### A. Modularisasi
+
+* C digunakan untuk interfacing dasar (I/O terminal, stb_image, stb_image_write).
+* C++ menangani seluruh pemrosesan visual (resize, rasio, luminance, gamma, mapping).
+
+Struktur file:
+
+```
+├── ascii_main.c          # entry utama
+├── image_processor.cpp   # logika visualisasi
+├── image_processor.h     # deklarasi extern "C"
+├── stb_image.h
+├── stb_image_write.h
+```
+
+### B. Build System (g++)
+
+Gunakan command:
+
+```
+g++ ascii_main.c image_processor.cpp -o ascii_art -O2 -Wall
+```
+
+Pastikan flag `-std=c++17` aktif untuk fitur modern tanpa mengorbankan kompatibilitas.
+
+---
+
+## 5. OPTIMASI KINERJA DAN STABILITAS
+
+### A. Pre-Allocation Memory Pool
+
+Sediakan buffer tetap di awal untuk frame (misal, 2–3MB) agar tidak terjadi fragmentasi heap saat animasi panjang.
+
+### B. Graceful Shutdown
+
+Tangani sinyal `SIGINT` atau `Ctrl+C` dengan aman. Bersihkan buffer dan tampilkan pesan:
+
+```
+[+] ASCII Engine terminated safely.
+```
+
+### C. Debug Mode (Opsional)
+
+Tambahkan flag `--debug` untuk menampilkan info berikut secara real-time:
+
+```
+FPS: 28.9 | Term: 120x30 | FrameSize: 80x40 | Palette: High
+```
+
+---
+
+## 6. TARGET AKHIR
+
+* **Output** tidak gepeng di terminal mana pun.
+* **FPS stabil**, tidak flicker.
+* **Detail tinggi** dan **gradasi realistis**.
+* **Kompatibel lintas OS** (Windows, Linux, macOS, Replit, Codespaces).
+* **Aman dari error & memory leak**.
+
+---
+
+> Dengan struktur ini, proyek ASCII Media akan mencapai kestabilan, kehalusan, dan kesetiaan visual maksimal di semua mode: gambar, GIF, maupun webcam — tanpa distorsi atau kerusakan proporsi, serta siap diintegrasikan dengan sistem C
