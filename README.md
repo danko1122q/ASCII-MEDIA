@@ -658,17 +658,8 @@ Copyright (c) 2025 danko12
 - [ ] Audio extraction and playback sync
 - [ ] Custom color palette import
 
-### v3.2 (Future)
-- [ ] Real-time webcam ASCII streaming
-- [ ] YouTube video download & play
-- [ ] WebP animation support
-
-### v4.0 (Vision)
-- [ ] GPU acceleration for real-time video
-- [ ] Network streaming support
-- [ ] ASCII art export to HTML/SVG
 
 ---
 
-**Made with ❤️ for the terminal**
+**Made By danko12**
 
