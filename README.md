@@ -645,7 +645,7 @@ Copyright (c) 2025 danko12
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/ascii-media/issues)
+- **Issues**: [GitHub Issues](https://github.com/danko1122q/ASCII-MEDIA/issues)
 - **Documentation**: See `TECHNICAL.md` for detailed technical docs
 - **Examples**: Check `sample-images/` directory
 
