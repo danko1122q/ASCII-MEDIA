@@ -653,10 +653,9 @@ Copyright (c) 2025 danko12
 
 ## 🗺️ Roadmap
 
-### v3.1 (Planned)
+### v3.1.0 (Planned)
 - [ ] Video file support (MP4, AVI, MKV)
-- [ ] Audio extraction and playback sync
-- [ ] Custom color palette import
+
 
 
 ---
